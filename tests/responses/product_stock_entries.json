@@ -1,0 +1,30 @@
+[
+    {
+        "id": "10",
+        "product_id": "2",
+        "amount": "1",
+        "best_before_date": "2022-04-14",
+        "purchased_date": "2022-04-08",
+        "stock_id": "62505f88ea718",
+        "price": "0",
+        "open": "1",
+        "opened_date": "2022-04-10",
+        "row_created_timestamp": "2022-04-08 16:15:04",
+        "location_id": "3",
+        "shopping_location_id": null
+    },
+    {
+        "id": "13",
+        "product_id": "2",
+        "amount": "5",
+        "best_before_date": "2022-10-25",
+        "purchased_date": "2022-04-08",
+        "stock_id": "62505f88ea718",
+        "price": "0",
+        "open": "0",
+        "opened_date": null,
+        "row_created_timestamp": "2022-04-10 11:00:51",
+        "location_id": "3",
+        "shopping_location_id": null
+    }
+]

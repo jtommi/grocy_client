@@ -27,6 +27,18 @@ class TestGrocycode(unittest.TestCase):
         self.assertEqual(product.id, 1)
         self.assertEqual(product.stock_id, "x624f2505ded59")
 
+    def test_invalid_code_raises_exception(self):
+        CODE = "123"
+        with self.assertRaises(ValueError):
+            GrocyCode(CODE)
+
+    def test_unknown_code_type_raises_exception(self):
+        CODE = "grcy:x:1:x624f2505ded59"
+        with self.assertRaises(ValueError) as error:
+            GrocyCode(CODE)
+
+        self.assertEqual(str(error.exception), "'x' is not a valid CodeType")
+
 
 if __name__ == "__main__":
     unittest.main()

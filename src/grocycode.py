@@ -27,5 +27,3 @@ class GrocyCode:
     def get_item(self) -> object:
         if self.type == CodeType.PRODUCT:
             return Product(id=self.id, stock_id=self.detail)
-        else:
-            raise ValueError(f"Unknown code type: {self.type}")

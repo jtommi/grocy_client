@@ -1,21 +1,41 @@
+import json
+import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from requests.models import Response
 from src.api_client import ApiClient
 
 
-def mocked_request_get_failed(*args, **kwargs):
-    response = Response()
-    response.status_code = 500
-    return response
-
-
 class TestApiClient(unittest.TestCase):
-    @patch("src.api_client.requests.get", side_effect=mocked_request_get_failed)
-    def test_client_raises_exception(self, mock_get):
-        with self.assertRaises(Exception):
+    @patch("src.api_client.requests.get")
+    def test_get_raises_exception_on_http_error(self, mock_get):
+        mock_get.return_value = MagicMock(status_code=500)
+        with self.assertRaises(ValueError):
             ApiClient().get("/api/stock/products/by-barcode/12345")
+
+    @patch("src.api_client.requests.post")
+    def test_post_raises_exception_on_http_error(self, mock_post):
+        mock_post.return_value = MagicMock(status_code=500)
+        with self.assertRaises(ValueError):
+            ApiClient().post("/api/stock/products/by-barcode/12345", data={})
+
+    @patch("src.api_client.requests.get")
+    def test_correct_base_url_through_env(self, mock_get):
+        mock_get.return_value = MagicMock(status_code=200, response=json.dumps({}))
+        URL = "http://localhost:8080"
+        os.environ["API_URL"] = URL
+        ApiClient().get("/api/stock/products/by-barcode/12345")
+        mock_get.assert_called()
+        self.assertIn(URL, mock_get.call_args.kwargs["url"])
+
+    @patch("src.api_client.requests.get")
+    def test_correct_base_url_through_param(self, mock_get):
+        mock_get.return_value = MagicMock(status_code=200, response=json.dumps({}))
+        URL = "http://localhost:8080"
+        ApiClient(api_url=URL).get("/api/stock/products/by-barcode/12345")
+        mock_get.assert_called()
+        self.assertIn(URL, mock_get.call_args.kwargs["url"])
 
 
 if __name__ == "__main__":

@@ -4,10 +4,11 @@ import unittest
 from unittest.mock import patch
 
 from requests.models import Response
+from src.grocycode import GrocyCode
 from src.product import Product
 
 
-def mocked_request_get(*args, **kwargs):
+def mocked_request(*args, **kwargs):
     response_content = None
     request_url = kwargs.get("url", None)
     response_file = None
@@ -17,7 +18,7 @@ def mocked_request_get(*args, **kwargs):
         response_file = "product_stock_entries.json"
 
     if response_file:
-        with open(f"responses/{response_file}", "r") as f:
+        with open(f"tests/responses/{response_file}", "r") as f:
             response_content = json.load(f)
     else:
         response_content = {}
@@ -29,13 +30,47 @@ def mocked_request_get(*args, **kwargs):
 
 
 class TestProduct(unittest.TestCase):
-    @patch("src.api_client.requests.get", side_effect=mocked_request_get)
-    def test_open_product(self, mock_get):
-        product = Product(id=2, stock_id="62505f88ea718")
+    @patch("src.api_client.requests.post", side_effect=mocked_request)
+    def test_open_product(self, mock_post):
+        product = Product(id=235, stock_id="62505f88ea718")
         product.open()
         # Check that get was called with correct parameters
-        mock_get.assert_called()
-        self.assertTrue(mock_get.call_args.kwargs["url"].endswith("/open"))
+        mock_post.assert_called()
+        self.assertIn("/open", mock_post.call_args.kwargs["url"])
+        self.assertIn("235", mock_post.call_args.kwargs["url"])
+
+    @patch("src.api_client.requests.post", side_effect=mocked_request)
+    def test_open_product_by_barcode(self, mock_post):
+        CODE = "grcy:p:1:x624f2505ded59"
+        grocycode = GrocyCode(CODE)
+        product = grocycode.get_item()
+        product.open()
+        # Check that get was called with correct parameters
+        mock_post.assert_called()
+        self.assertIn("/open", mock_post.call_args.kwargs["url"])
+        self.assertIn("by-barcode", mock_post.call_args.kwargs["url"])
+        self.assertIn("x624f2505ded59", mock_post.call_args.kwargs["url"])
+
+    @patch("src.api_client.requests.post", side_effect=mocked_request)
+    def test_consume_product(self, mock_post):
+        product = Product(id=235, stock_id="62505f88ea718")
+        product.consume()
+        # Check that get was called with correct parameters
+        mock_post.assert_called()
+        self.assertIn("/consume", mock_post.call_args.kwargs["url"])
+        self.assertIn("235", mock_post.call_args.kwargs["url"])
+
+    @patch("src.api_client.requests.post", side_effect=mocked_request)
+    def test_consume_product_by_barcode(self, mock_post):
+        CODE = "grcy:p:1:x624f2505ded59"
+        grocycode = GrocyCode(CODE)
+        product = grocycode.get_item()
+        product.consume()
+        # Check that get was called with correct parameters
+        mock_post.assert_called()
+        self.assertRegex(mock_post.call_args.kwargs["url"], r".*/consume$")
+        self.assertIn("by-barcode", mock_post.call_args.kwargs["url"])
+        self.assertIn("x624f2505ded59", mock_post.call_args.kwargs["url"])
 
 
 if __name__ == "__main__":

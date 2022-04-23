@@ -5,6 +5,11 @@ from src.product import Product
 
 
 class TestGrocycode(unittest.TestCase):
+    def test_code_prints_right(self):
+        CODE = "grcy:p:1:x624f2505ded59"
+        grocycode = GrocyCode(CODE)
+        self.assertEqual(str(grocycode), CODE)
+
     def test_code_parsing_without_detail(self):
         CODE = "grcy:p:1"
         grocycode = GrocyCode(CODE)

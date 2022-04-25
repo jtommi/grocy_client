@@ -14,8 +14,8 @@ def mocked_request(*args, **kwargs):
     response_file = None
     if "/api/stock/products/by-barcode/" in request_url:
         response_file = "product.json"
-    elif re.search(r".*/stock/products/\d+/entries$", request_url):
-        response_file = "product_stock_entries.json"
+    elif re.search(r".*/stock/products/235/entries$", request_url):
+        response_file = "product_stock_entries_open.json"
 
     if response_file:
         with open(f"tests/responses/{response_file}", "r") as f:

@@ -1,7 +1,7 @@
 import json
 import re
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from requests.models import Response
 from src.grocycode import GrocyCode
@@ -16,6 +16,8 @@ def mocked_request(*args, **kwargs):
         response_file = "product.json"
     elif re.search(r".*/stock/products/235/entries$", request_url):
         response_file = "product_stock_entries_open.json"
+    elif re.search(r".*/stock/products/239/entries$", request_url):
+        response_file = "product_stock_entries_not_open.json"
 
     if response_file:
         with open(f"tests/responses/{response_file}", "r") as f:
@@ -71,6 +73,31 @@ class TestProduct(unittest.TestCase):
         self.assertRegex(mock_post.call_args.kwargs["url"], r".*/consume$")
         self.assertIn("by-barcode", mock_post.call_args.kwargs["url"])
         self.assertIn("x624f2505ded59", mock_post.call_args.kwargs["url"])
+
+    @patch("src.api_client.requests.get", side_effect=mocked_request)
+    @patch("src.api_client.requests.post")
+    def test_opens_when_not_open(self, mock_post, mock_get):
+        mock_post.return_value = MagicMock(status_code=200, response=json.dumps({}))
+        product = Product(id=239, stock_id="62505f88ea718")
+        product.open_or_consume()
+        mock_post.assert_called()
+        self.assertRegex(mock_post.call_args.kwargs["url"], r".*/open$")
+
+    @patch("src.api_client.requests.get", side_effect=mocked_request)
+    @patch("src.api_client.requests.post", side_effect=mocked_request)
+    def test_consumes_when_open(self, mock_post, mock_get):
+        mock_post.return_value = MagicMock(status_code=200)
+        product = Product(id=235, stock_id="62505f88ea718")
+        product.open_or_consume()
+        mock_post.assert_called()
+        self.assertRegex(mock_post.call_args.kwargs["url"], r".*/consume$")
+
+    @patch("src.api_client.requests.get", side_effect=mocked_request)
+    def test_open_or_consume_raises_on_no_entries(self, mock_get):
+        product = Product(id=235, stock_id="non_existing")
+        with self.assertRaises(Exception) as exception:
+            product.open_or_consume()
+        self.assertEquals(str(exception.exception), "No stock entries found")
 
 
 if __name__ == "__main__":

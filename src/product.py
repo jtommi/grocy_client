@@ -24,3 +24,17 @@ class Product(BaseModel):
         else:
             path = f"/api/stock/products/{self.id}/consume"
         api_client.post(path=path, data=data)
+
+    def open_or_consume(self):
+        api_client = ApiClient()
+        path = f"/api/stock/products/{self.id}/entries"
+        entries = api_client.get(path=path)
+        if self.stock_id and entries:
+            entries = [entry for entry in entries if entry["stock_id"] == self.stock_id]
+        if not entries:
+            raise Exception("No stock entries found")
+        opened = any([int(entry["open"]) > 0 for entry in entries])
+        if opened:
+            self.consume()
+        else:
+            self.open()

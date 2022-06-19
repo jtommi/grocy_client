@@ -25,11 +25,11 @@ class Product(BaseModel):
         try:
             api_client.post(path=path, data=data)
         except APIException as e:
-            if e.message == "No transaction was found by the given transaction id":
+            if str(e) == "No transaction was found by the given transaction id":
                 raise NoStockEntriesException(
                     f"No stock entries found for product {self.id}, stock_id {self.stock_id}"
                 )
-            if e.message == "Product does not exist or is inactive":
+            if str(e) == "Product does not exist or is inactive":
                 raise ProductNotExistsException(
                     f"Product {self.id} does not exist or is inactive"
                 )
@@ -45,13 +45,13 @@ class Product(BaseModel):
             api_client.post(path=path, data=data)
         except APIException as e:
             if (
-                e.message
+                str(e)
                 == "Amount to be consumed cannot be > current stock amount (if supplied, at the desired location)"
             ):
                 raise NoStockEntriesException(
                     f"No stock entries found for product {self.id}, stock_id {self.stock_id}"
                 )
-            if e.message == "Product does not exist or is inactive":
+            if str(e) == "Product does not exist or is inactive":
                 raise ProductNotExistsException(
                     f"Product {self.id} does not exist or is inactive"
                 )

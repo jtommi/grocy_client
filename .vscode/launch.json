@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Main.py",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "VID_PID": "080C:0400",
+                "API_URL": "https://en.demo.grocy.info",
+                "API_KEY": "wy9D6xdaVnrvU2L1Q4p34YZSIMBNppKIJAaXPKmpvKdd6JjA4X",
+            }
+        }
+    ]
+}

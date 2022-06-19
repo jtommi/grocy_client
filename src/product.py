@@ -6,6 +6,10 @@ class NoStockEntriesException(Exception):
     pass
 
 
+class ProductNotExistsException(Exception):
+    pass
+
+
 class Product(BaseModel):
     id: int
     stock_id: str = None
@@ -25,6 +29,10 @@ class Product(BaseModel):
                 raise NoStockEntriesException(
                     f"No stock entries found for product {self.id}, stock_id {self.stock_id}"
                 )
+            if e.message == "Product does not exist or is inactive":
+                raise ProductNotExistsException(
+                    f"Product {self.id} does not exist or is inactive"
+                )
 
     def consume(self, amount: int = 1, spoiled: bool = False):
         api_client = ApiClient()
@@ -33,7 +41,6 @@ class Product(BaseModel):
             path = f"/api/stock/products/by-barcode/{self.grocycode}/consume"
         else:
             path = f"/api/stock/products/{self.id}/consume"
-        api_client.post(path=path, data=data)
         try:
             api_client.post(path=path, data=data)
         except APIException as e:
@@ -43,6 +50,10 @@ class Product(BaseModel):
             ):
                 raise NoStockEntriesException(
                     f"No stock entries found for product {self.id}, stock_id {self.stock_id}"
+                )
+            if e.message == "Product does not exist or is inactive":
+                raise ProductNotExistsException(
+                    f"Product {self.id} does not exist or is inactive"
                 )
 
     def open_or_consume(self):

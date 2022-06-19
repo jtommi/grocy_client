@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from src.grocycode import GrocyCode
-from src.product import Product
+from src.product import NoStockEntriesException, Product, ProductNotExistsException
 
 
 class TestProduct(unittest.TestCase):
@@ -99,6 +99,38 @@ class TestProduct(unittest.TestCase):
         with self.assertRaises(Exception) as exception:
             product.open_or_consume()
         self.assertIn("No stock entries found", str(exception.exception))
+
+    @patch("src.api_client.requests.post")
+    def test_open_and_consume_raise_on_inexisting_product(self, mock_post):
+        mock_post.return_value = MagicMock(
+            status_code=400,
+            json=lambda: {"error_message": "Product does not exist or is inactive"},
+        )
+        product = Product(id=235)
+        with self.assertRaises(ProductNotExistsException):
+            product.open()
+        with self.assertRaises(ProductNotExistsException):
+            product.consume()
+
+    @patch("src.api_client.requests.post")
+    def test_open_and_consume_raise_on_inexisting_stock_entries(self, mock_post):
+        mock_post.return_value = MagicMock(
+            status_code=400,
+            json=lambda: {
+                "error_message": "No transaction was found by the given transaction id"
+            },
+        )
+        product = Product(id=235)
+        with self.assertRaises(NoStockEntriesException):
+            product.open()
+        mock_post.return_value = MagicMock(
+            status_code=400,
+            json=lambda: {
+                "error_message": "Amount to be consumed cannot be > current stock amount (if supplied, at the desired location)"
+            },
+        )
+        with self.assertRaises(NoStockEntriesException):
+            product.consume()
 
 
 if __name__ == "__main__":

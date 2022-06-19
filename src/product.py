@@ -1,5 +1,13 @@
 from pydantic import BaseModel
-from src.api_client import ApiClient
+from src.api_client import APIException, ApiClient
+
+
+class NoStockEntriesException(Exception):
+    pass
+
+
+class ProductNotExistsException(Exception):
+    pass
 
 
 class Product(BaseModel):
@@ -14,7 +22,17 @@ class Product(BaseModel):
             path = f"/api/stock/products/by-barcode/{self.grocycode}/open"
         else:
             path = f"/api/stock/products/{self.id}/open"
-        api_client.post(path=path, data=data)
+        try:
+            api_client.post(path=path, data=data)
+        except APIException as e:
+            if e.message == "No transaction was found by the given transaction id":
+                raise NoStockEntriesException(
+                    f"No stock entries found for product {self.id}, stock_id {self.stock_id}"
+                )
+            if e.message == "Product does not exist or is inactive":
+                raise ProductNotExistsException(
+                    f"Product {self.id} does not exist or is inactive"
+                )
 
     def consume(self, amount: int = 1, spoiled: bool = False):
         api_client = ApiClient()
@@ -23,7 +41,20 @@ class Product(BaseModel):
             path = f"/api/stock/products/by-barcode/{self.grocycode}/consume"
         else:
             path = f"/api/stock/products/{self.id}/consume"
-        api_client.post(path=path, data=data)
+        try:
+            api_client.post(path=path, data=data)
+        except APIException as e:
+            if (
+                e.message
+                == "Amount to be consumed cannot be > current stock amount (if supplied, at the desired location)"
+            ):
+                raise NoStockEntriesException(
+                    f"No stock entries found for product {self.id}, stock_id {self.stock_id}"
+                )
+            if e.message == "Product does not exist or is inactive":
+                raise ProductNotExistsException(
+                    f"Product {self.id} does not exist or is inactive"
+                )
 
     def open_or_consume(self):
         api_client = ApiClient()
@@ -32,7 +63,9 @@ class Product(BaseModel):
         if self.stock_id and entries:
             entries = [entry for entry in entries if entry["stock_id"] == self.stock_id]
         if not entries:
-            raise Exception("No stock entries found")
+            raise NoStockEntriesException(
+                f"No stock entries found for product {self.id}, stock_id {self.stock_id}"
+            )
         opened = any([int(entry["open"]) > 0 for entry in entries])
         if opened:
             self.consume()

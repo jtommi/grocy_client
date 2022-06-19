@@ -30,7 +30,7 @@
             ]
         },
         {
-            "label": "Generate test coverage repôrt",
+            "label": "Generate test coverage report",
             "command": "${config:python.pythonPath}",
             "args": [
                 "-m",

@@ -22,7 +22,7 @@ class TestNtfy(unittest.TestCase):
         mock_post.return_value = MagicMock(status_code=200, json=lambda: {})
 
         ntfy = NtfyClient()
-        ntfy.send("")
+        ntfy.send_message("")
 
         mock_post.assert_called
         self.assertEqual(mock_post.call_args.kwargs["url"], f"http://{SERVER}/{TOPIC}")
@@ -33,12 +33,15 @@ class TestNtfy(unittest.TestCase):
         message = "Hello World"
 
         ntfy = NtfyClient()
-        ntfy.send(message)
+        ntfy.send_message(message)
 
         mock_post.assert_called
         self.assertEqual(mock_post.call_args.kwargs["data"], message)
 
-    def test_raises_on_missing_config(self):
+    @patch("src.ntfy.os.getenv")
+    def test_raises_on_missing_config(self, mock_getenv):
+        mock_getenv.return_value = None
+
         with self.assertRaises(ValueError):
             NtfyClient()
         with self.assertRaises(ValueError):

@@ -16,7 +16,7 @@ class NtfyClient:
         if not self.server.startswith("http"):
             self.server = f"http://{self.server}"
 
-    def send(self, message: str) -> None:
+    def send_message(self, message: str) -> None:
         response = requests.post(url=f"{self.server}/{self.topic}", data=message)
         if response.status_code != 200:
             logging.error(response.json())

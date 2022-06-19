@@ -1,5 +1,4 @@
 import json
-import os
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -22,10 +21,11 @@ class TestApiClient(unittest.TestCase):
             self.assertIsNotNone(exception.status_code)
 
     @patch("src.api_client.requests.get")
-    def test_correct_base_url_through_env(self, mock_get):
+    @patch("src.api_client.os.getenv")
+    def test_correct_base_url_through_env(self, mock_getenv, mock_get):
         mock_get.return_value = MagicMock(status_code=200, response=json.dumps({}))
         URL = "http://localhost:8080"
-        os.environ["API_URL"] = URL
+        mock_getenv.return_value = URL
         ApiClient().get("/api/stock/products/by-barcode/12345")
         mock_get.assert_called()
         self.assertIn(URL, mock_get.call_args.kwargs["url"])

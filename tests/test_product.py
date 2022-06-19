@@ -98,7 +98,7 @@ class TestProduct(unittest.TestCase):
         product = Product(id=235, stock_id="non_existing")
         with self.assertRaises(Exception) as exception:
             product.open_or_consume()
-        self.assertEquals(str(exception.exception), "No stock entries found")
+        self.assertIn("No stock entries found", str(exception.exception))
 
 
 if __name__ == "__main__":

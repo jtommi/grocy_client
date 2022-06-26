@@ -90,7 +90,7 @@ def main():
             barcode = barcode.strip()
             if len(barcode) > 0:
                 try:
-                    grocycode = GrocyCode(barcode)
+                    grocycode = GrocyCode(barcode.decode())
                     product: Product = grocycode.get_item()
                     product.open_or_consume()
                 except (

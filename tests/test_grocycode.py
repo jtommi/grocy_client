@@ -1,6 +1,11 @@
 import unittest
 
-from src.grocycode import GrocyCode, CodeType
+from src.grocycode import (
+    CodeType,
+    GrocyCode,
+    InvalidGrocyCodeException,
+    UnknownCodeTypeException,
+)
 from src.product import Product
 
 
@@ -34,15 +39,15 @@ class TestGrocycode(unittest.TestCase):
 
     def test_invalid_code_raises_exception(self):
         CODE = "123"
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidGrocyCodeException):
             GrocyCode(CODE)
 
     def test_unknown_code_type_raises_exception(self):
         CODE = "grcy:x:1:x624f2505ded59"
-        with self.assertRaises(ValueError) as error:
+        with self.assertRaises(UnknownCodeTypeException) as error:
             GrocyCode(CODE)
 
-        self.assertEqual(str(error.exception), "'x' is not a valid CodeType")
+        self.assertEqual(str(error.exception), "Unknown code type: 'x'")
 
 
 if __name__ == "__main__":

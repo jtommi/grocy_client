@@ -1,7 +1,8 @@
 import unittest
+from logging import StreamHandler
 from unittest.mock import MagicMock, patch
 
-from src.ntfy import NtfyClient
+from src.ntfy import NtfyClient, NtfyHandler
 
 SERVER = "localhost:8080"
 TOPIC = "test"
@@ -30,6 +31,7 @@ class TestNtfy(unittest.TestCase):
     @patch("src.ntfy.requests.post")
     @patch("src.ntfy.os.getenv", side_effect=mock_getenv)
     def test_send_message(self, mock_getenv, mock_post):
+        mock_post.return_value = MagicMock(status_code=200)
         message = "Hello World"
 
         ntfy = NtfyClient()
@@ -51,3 +53,29 @@ class TestNtfy(unittest.TestCase):
 
     def test_not_raises_with_params(self):
         NtfyClient(server=SERVER, topic=TOPIC)
+
+    @patch("src.ntfy.requests.post")
+    @patch("src.ntfy.logging.error")
+    def test_logs_on_error(self, mock_error, mock_post):
+        mock_post.return_value = MagicMock(status_code=400)
+
+        ntfy = NtfyClient(server=SERVER, topic=TOPIC)
+        ntfy.send_message("")
+        mock_error.assert_called()
+
+
+class TestNtfyHandler(unittest.TestCase):
+    @patch("src.ntfy.NtfyClient")
+    def test_client_init(self, mock_client):
+        handler = NtfyHandler(server=SERVER, topic=TOPIC)
+        self.assertIsInstance(handler, StreamHandler)
+        mock_client.assert_called_with(server=SERVER, topic=TOPIC)
+
+    @patch("src.ntfy.logging.StreamHandler.format")
+    @patch("src.ntfy.NtfyClient.send_message")
+    def test_emit_sends_message(self, mock_send_message, mock_format):
+        handler = NtfyHandler(server=SERVER, topic=TOPIC)
+        message = "Hello World"
+        mock_format.return_value = message
+        handler.emit(message)
+        mock_send_message.assert_called_with(message)

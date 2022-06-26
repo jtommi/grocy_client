@@ -20,3 +20,16 @@ class NtfyClient:
         response = requests.post(url=f"{self.server}/{self.topic}", data=message)
         if response.status_code != 200:
             logging.error(response.json())
+
+
+class NtfyHandler(logging.StreamHandler):
+    def __init__(self, server=None, topic=None):
+        logging.StreamHandler.__init__(self)
+        self.server = server
+        self.topic = topic
+
+        self.ntfy_client = NtfyClient(server=server, topic=topic)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.ntfy_client.send_message(msg)

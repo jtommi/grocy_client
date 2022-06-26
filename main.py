@@ -9,7 +9,7 @@ from serial.tools import list_ports
 
 from src.api_client import APIException
 from src.grocycode import GrocyCode, InvalidGrocyCodeException
-from src.ntfy import NtfyClient
+from src.ntfy import NtfyHandler
 from src.product import NoStockEntriesException, Product, ProductNotExistsException
 
 
@@ -61,19 +61,28 @@ def main():
 
     # Configure the logger
     logger = logging.getLogger(__name__)
-    formatter = logging.Formatter("%(asctime)s [%(name)] %(levelname)-8s %(message)s")
+    formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)-8s %(message)s")
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
     logger.addHandler(stream_handler)
 
+    # Add file logger if the application is running inside a Docker container
     if os.getenv("AM_I_IN_A_DOCKER_CONTAINER", default=False):
         file_handler = logging.FileHandler(
             f"/var/log/grocy_client/{__name__}_{datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')}.log"
         )
         file_handler.setFormatter(formatter)
+        file_handler.setLevel(logging.DEBUG)
         logger.addHandler(file_handler)
 
-    logger.setLevel(logging.WARNING)
+    # Add a Ntfy handler if the server was specified
+    if os.getenv("NTFY_SERVER", default=False):
+        ntfy_handler = NtfyHandler()
+        ntfy_formatter = logging.Formatter("%(levelname)s - %(message)s")
+        ntfy_handler.setFormatter(ntfy_formatter)
+        file_handler.setLevel(logging.WARNING)
+        logger.addHandler(ntfy_handler)
 
     # Get the barcode scanner device
     try:
@@ -82,9 +91,8 @@ def main():
         logger.exception(str(e))
         raise e
 
-    ntfy = NtfyClient()
-
     with serial.Serial(device, 19200, timeout=0) as ser:
+        logger.info("App started, watiting for barcode input")
         while True:
             barcode = ser.readline()
             barcode = barcode.strip()
@@ -99,10 +107,9 @@ def main():
                     ProductNotExistsException,
                 ) as e:
                     logger.warning(str(e))
-                    ntfy.send_message(str(e))
                 except APIException as e:
+                    logger.debug("Stacktrace", exc_info=True)
                     logger.exception(str(e))
-                    ntfy.send_message(f"Unhandled API exception: {str(e)}")
 
 
 if __name__ == "__main__":

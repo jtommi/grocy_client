@@ -1,0 +1,22 @@
+services:
+  client:
+    container_name: grocy_client
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - VID_PID=
+      - API_URL=
+      - API_KEY=
+      - NTFY_SERVER=
+      - NTFY_TOPIC=
+      - TZ=
+    env_file:
+      - .env
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    volumes:
+      - grocy_client_logs:/var/log/grocy_client
+
+volumes:
+  grocy_client_logs:

@@ -9,7 +9,7 @@ from serial.tools import list_ports
 
 from src.api_client import APIException
 from src.grocycode import GrocyCode, InvalidGrocyCodeException
-from src.ntfy import NtfyClient
+from src.ntfy import NtfyHandler
 from src.product import NoStockEntriesException, Product, ProductNotExistsException
 
 
@@ -66,12 +66,20 @@ def main():
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
 
+    # Add file logger if the application is running inside a Docker container
     if os.getenv("AM_I_IN_A_DOCKER_CONTAINER", default=False):
         file_handler = logging.FileHandler(
             f"/var/log/grocy_client/{__name__}_{datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')}.log"
         )
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+    # Add a Ntfy handler if the server was specified
+    if os.getenv("NTFY_SERVER", default=False):
+        ntfy_handler = NtfyHandler()
+        ntfy_formatter = logging.Formatter("%(levelname)s - %(message)s")
+        ntfy_handler.setFormatter(ntfy_formatter)
+        logger.addHandler(ntfy_handler)
 
     logger.setLevel(logging.WARNING)
 
@@ -81,8 +89,6 @@ def main():
     except Exception as e:
         logger.exception(str(e))
         raise e
-
-    ntfy = NtfyClient()
 
     with serial.Serial(device, 19200, timeout=0) as ser:
         while True:
@@ -99,10 +105,8 @@ def main():
                     ProductNotExistsException,
                 ) as e:
                     logger.warning(str(e))
-                    ntfy.send_message(str(e))
                 except APIException as e:
                     logger.exception(str(e))
-                    ntfy.send_message(f"Unhandled API exception: {str(e)}")
 
 
 if __name__ == "__main__":

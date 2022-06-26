@@ -1,7 +1,9 @@
 import logging
 import os
 import sys
+from datetime import datetime
 
+import pendulum
 import serial
 from serial.tools import list_ports
 
@@ -54,13 +56,26 @@ def main():
     """
     Main function
     """
+    # Get timezone
+    tz = pendulum.timezone(os.getenv("TZ", default="UTC"))
+
+    # Configure the logger
     logger = logging.getLogger(__name__)
-    handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter("%(asctime)s [%(name)] %(levelname)-8s %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+    if os.getenv("AM_I_IN_A_DOCKER_CONTAINER", default=False):
+        file_handler = logging.FileHandler(
+            f"/var/log/grocy_client/{__name__}_{datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')}.log"
+        )
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
     logger.setLevel(logging.WARNING)
 
+    # Get the barcode scanner device
     try:
         device = find_serial_device(os.getenv("VID_PID", ""))
     except Exception as e:

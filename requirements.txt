@@ -1,3 +1,4 @@
+pendulum
 pydantic
 pyserial
 requests

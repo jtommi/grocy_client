@@ -1,6 +1,6 @@
 # Grocy client
 
-This project is intended to be a headless client for Grocy
+This project is intended to be a headless client for [Grocy](https://grocy.info/)
 
 In the day to day operations in your kitchen, you don't want to whip out your phone each time you open or consume and item.  
 Instead you want easy, straight forward handling.

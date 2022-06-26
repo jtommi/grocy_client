@@ -54,14 +54,17 @@ def main():
     """
     Main function
     """
-    device = find_serial_device(os.getenv("VID_PID", ""))
-
     logger = logging.getLogger(__name__)
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter("%(asctime)s [%(name)] %(levelname)-8s %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.WARNING)
+
+    try:
+        device = find_serial_device(os.getenv("VID_PID", ""))
+    except Exception as e:
+        logger.exception(str(e))
 
     ntfy = NtfyClient()
 

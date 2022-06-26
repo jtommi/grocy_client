@@ -22,13 +22,12 @@ class NtfyClient:
             logging.error(response.json())
 
 
-class NtfyHandler(logging.NullHandler):
+class NtfyHandler(logging.StreamHandler):
     def __init__(self, server=None, topic=None):
-        logging.NullHandler.__init__(self)
+        logging.StreamHandler.__init__(self)
         self.server = server
         self.topic = topic
 
-        # Kafka Broker Configuration
         self.ntfy_client = NtfyClient(server=server, topic=topic)
 
     def emit(self, record):

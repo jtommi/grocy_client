@@ -65,6 +65,7 @@ def main():
         device = find_serial_device(os.getenv("VID_PID", ""))
     except Exception as e:
         logger.exception(str(e))
+        raise e
 
     ntfy = NtfyClient()
 

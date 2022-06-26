@@ -64,6 +64,7 @@ def main():
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)-8s %(message)s")
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
     logger.addHandler(stream_handler)
 
     # Add file logger if the application is running inside a Docker container
@@ -72,6 +73,7 @@ def main():
             f"/var/log/grocy_client/{__name__}_{datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')}.log"
         )
         file_handler.setFormatter(formatter)
+        file_handler.setLevel(logging.DEBUG)
         logger.addHandler(file_handler)
 
     # Add a Ntfy handler if the server was specified
@@ -79,9 +81,8 @@ def main():
         ntfy_handler = NtfyHandler()
         ntfy_formatter = logging.Formatter("%(levelname)s - %(message)s")
         ntfy_handler.setFormatter(ntfy_formatter)
+        file_handler.setLevel(logging.WARNING)
         logger.addHandler(ntfy_handler)
-
-    logger.setLevel(logging.WARNING)
 
     # Get the barcode scanner device
     try:
@@ -91,6 +92,7 @@ def main():
         raise e
 
     with serial.Serial(device, 19200, timeout=0) as ser:
+        logger.info("App started, watiting for barcode input")
         while True:
             barcode = ser.readline()
             barcode = barcode.strip()
@@ -106,6 +108,7 @@ def main():
                 ) as e:
                     logger.warning(str(e))
                 except APIException as e:
+                    logger.debug("Stacktrace", exc_info=True)
                     logger.exception(str(e))
 
 

@@ -8,6 +8,9 @@ class APIException(Exception):
         self.message = message
         self.status_code = status_code
 
+    def __str__(self) -> str:
+        return self.message
+
 
 class ApiClient:
     def __init__(self, api_url: str = None, api_key: str = None) -> None:

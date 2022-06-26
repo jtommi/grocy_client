@@ -7,8 +7,14 @@ from src.product import Product
 class CodeType(Enum):
     PRODUCT = "p"
 
+
 class InvalidGrocyCodeException(Exception):
     pass
+
+
+class UnknownCodeTypeException(Exception):
+    pass
+
 
 PATTERN = re.compile(r"^grcy:([a-zA-Z]):(\d+)(?::(\w+))?$")
 
@@ -25,7 +31,10 @@ class GrocyCode:
         if not matches:
             raise InvalidGrocyCodeException(f"Invalid code: {code}")
 
-        self.type = CodeType(matches[1])
+        try:
+            self.type = CodeType(matches[1])
+        except ValueError:
+            raise UnknownCodeTypeException(f"Unknown code type: '{matches[1]}'") from None
         self.id = int(matches[2])
         self.detail = matches[3] if len(matches.groups()) == 3 else None
         self.code = code

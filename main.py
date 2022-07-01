@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime
 
-import pendulum
+from pendulum.tz import timezone
 import serial
 from serial.tools import list_ports
 
@@ -57,9 +57,8 @@ def main():
     Main function
     """
     # Get timezone
-    tz = pendulum.timezone(os.getenv("TZ", default="UTC"))
-
-    # Configure the logger
+    tz = timezone(os.getenv("TZ", default="UTC"))
+     # Configure the logger
     logger = logging.getLogger(__name__)
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)-8s %(message)s")
     stream_handler = logging.StreamHandler(sys.stdout)

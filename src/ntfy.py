@@ -5,7 +5,7 @@ import requests
 
 
 class NtfyClient:
-    def __init__(self, server: str = None, topic: str = None) -> None:
+    def __init__(self, server: str | None = None, topic: str | None = None) -> None:
         self.server = server if server else os.getenv("NTFY_SERVER")
         self.topic = topic if topic else os.getenv("NTFY_TOPIC")
         if not self.server:

@@ -6,6 +6,7 @@ from src.grocycode import GrocyCode
 from src.product import NoStockEntriesException, Product, ProductNotExistsException
 
 
+@patch("src.api_client.os.getenv")
 class TestProduct(unittest.TestCase):
     def setUp(self):
         response_files = {
@@ -18,7 +19,7 @@ class TestProduct(unittest.TestCase):
                 self.response_data[response] = json.load(f)
 
     @patch("src.api_client.requests.post")
-    def test_open_product(self, mock_post):
+    def test_open_product(self, mock_post, mock_getenv):
         mock_post.return_value = MagicMock(status_code=200)
         product = Product(id=235, stock_id="62505f88ea718")
         product.open()
@@ -28,7 +29,7 @@ class TestProduct(unittest.TestCase):
         self.assertIn("235", mock_post.call_args.kwargs["url"])
 
     @patch("src.api_client.requests.post")
-    def test_open_product_by_barcode(self, mock_post):
+    def test_open_product_by_barcode(self, mock_post, mock_getenv):
         mock_post.return_value = MagicMock(status_code=200)
         CODE = "grcy:p:1:x624f2505ded59"
         grocycode = GrocyCode(CODE)
@@ -41,7 +42,7 @@ class TestProduct(unittest.TestCase):
         self.assertIn("x624f2505ded59", mock_post.call_args.kwargs["url"])
 
     @patch("src.api_client.requests.post")
-    def test_consume_product(self, mock_post):
+    def test_consume_product(self, mock_post, mock_getenv):
         mock_post.return_value = MagicMock(status_code=200)
         product = Product(id=235, stock_id="62505f88ea718")
         product.consume()
@@ -51,7 +52,7 @@ class TestProduct(unittest.TestCase):
         self.assertIn("235", mock_post.call_args.kwargs["url"])
 
     @patch("src.api_client.requests.post")
-    def test_consume_product_by_barcode(self, mock_post):
+    def test_consume_product_by_barcode(self, mock_post, mock_getenv):
         mock_post.return_value = MagicMock(status_code=200)
         CODE = "grcy:p:1:x624f2505ded59"
         grocycode = GrocyCode(CODE)
@@ -65,7 +66,7 @@ class TestProduct(unittest.TestCase):
 
     @patch("src.api_client.requests.get")
     @patch("src.api_client.requests.post")
-    def test_opens_when_not_open(self, mock_post, mock_get):
+    def test_opens_when_not_open(self, mock_post, mock_get, mock_getenv):
         mock_get.return_value = MagicMock(
             status_code=200,
             json=lambda: self.response_data["stock_entries_not_open"],
@@ -78,7 +79,7 @@ class TestProduct(unittest.TestCase):
 
     @patch("src.api_client.requests.get")
     @patch("src.api_client.requests.post")
-    def test_consumes_when_open(self, mock_post, mock_get):
+    def test_consumes_when_open(self, mock_post, mock_get, mock_getenv):
         mock_get.return_value = MagicMock(
             status_code=200,
             json=lambda: self.response_data["stock_entries_open"],
@@ -90,7 +91,7 @@ class TestProduct(unittest.TestCase):
         self.assertRegex(mock_post.call_args.kwargs["url"], r".*/consume$")
 
     @patch("src.api_client.requests.get")
-    def test_open_or_consume_raises_on_no_entries(self, mock_get):
+    def test_open_or_consume_raises_on_no_entries(self, mock_get, mock_getenv):
         mock_get.return_value = MagicMock(
             status_code=200,
             json=lambda: self.response_data["stock_entries_open"],
@@ -101,7 +102,7 @@ class TestProduct(unittest.TestCase):
         self.assertIn("No stock entries found", str(exception.exception))
 
     @patch("src.api_client.requests.post")
-    def test_open_raise_on_inexisting_product(self, mock_post):
+    def test_open_raise_on_inexisting_product(self, mock_post, mock_getenv):
         mock_post.return_value = MagicMock(
             status_code=400,
             json=lambda: {"error_message": "Product does not exist or is inactive"},
@@ -111,7 +112,7 @@ class TestProduct(unittest.TestCase):
             product.open()
 
     @patch("src.api_client.requests.post")
-    def test_consume_raise_on_inexisting_product(self, mock_post):
+    def test_consume_raise_on_inexisting_product(self, mock_post, mock_getenv):
         mock_post.return_value = MagicMock(
             status_code=400,
             json=lambda: {"error_message": "Product does not exist or is inactive"},
@@ -122,7 +123,7 @@ class TestProduct(unittest.TestCase):
             product.consume()
 
     @patch("src.api_client.requests.post")
-    def test_open_raise_on_inexisting_stock_entries(self, mock_post):
+    def test_open_raise_on_inexisting_stock_entries(self, mock_post, mock_getenv):
         mock_post.return_value = MagicMock(
             status_code=400,
             json=lambda: {
@@ -134,7 +135,7 @@ class TestProduct(unittest.TestCase):
             product.open()
 
     @patch("src.api_client.requests.post")
-    def test_consume_raise_on_inexisting_stock_entries(self, mock_post):
+    def test_consume_raise_on_inexisting_stock_entries(self, mock_post, mock_getenv):
         product = Product(id=235)
 
         mock_post.return_value = MagicMock(

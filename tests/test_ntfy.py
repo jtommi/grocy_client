@@ -4,11 +4,11 @@ from unittest.mock import MagicMock, patch
 
 from src.ntfy import NtfyClient, NtfyHandler
 
-SERVER = "localhost:8080"
-TOPIC = "test"
+SERVER: str = "localhost:8080"
+TOPIC: str = "test"
 
 
-def mock_getenv(key: str) -> str:
+def mock_getenv(key: str) -> str:  # type: ignore
     if key == "NTFY_SERVER":
         return SERVER
     elif key == "NTFY_TOPIC":
@@ -77,5 +77,5 @@ class TestNtfyHandler(unittest.TestCase):
         handler = NtfyHandler(server=SERVER, topic=TOPIC)
         message = "Hello World"
         mock_format.return_value = message
-        handler.emit(message)
+        handler.emit(message)  # type: ignore
         mock_send_message.assert_called_with(message)

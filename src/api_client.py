@@ -4,7 +4,7 @@ import requests
 
 
 class APIException(Exception):
-    def __init__(self, message, status_code=None):
+    def __init__(self, message: str, status_code: int | None = None) -> None:
         self.message = message
         self.status_code = status_code
 
@@ -13,9 +13,11 @@ class APIException(Exception):
 
 
 class ApiClient:
-    def __init__(self, api_url: str = None, api_key: str = None) -> None:
-        self.api_url = api_url if api_url else os.getenv("API_URL")
-        self.api_key = api_key if api_key else os.getenv("API_KEY")
+    def __init__(self, api_url: str | None = None, api_key: str | None = None) -> None:
+        self.api_url: str = api_url if api_url else os.getenv("API_URL")  # type: ignore
+        self.api_key: str = api_key if api_key else os.getenv("API_KEY")  # type: ignore
+        if not self.api_key or not self.api_url:
+            raise ValueError("API_URL and/or API_KEY is not set")
 
     def get(self, path: str) -> dict:
         response = requests.get(

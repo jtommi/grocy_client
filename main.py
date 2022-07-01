@@ -98,7 +98,7 @@ def main():
             if len(barcode) > 0:
                 try:
                     grocycode = GrocyCode(barcode.decode())
-                    product: Product = grocycode.get_item()
+                    product: Product = grocycode.get_product()
                     product.open_or_consume()
                 except (
                     InvalidGrocyCodeException,

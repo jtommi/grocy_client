@@ -1,9 +1,11 @@
 import unittest
+from unittest.mock import patch
 
 from src.grocycode import (
     CodeType,
     GrocyCode,
     InvalidGrocyCodeException,
+    NotAProductException,
     UnknownCodeTypeException,
 )
 from src.product import Product
@@ -32,7 +34,7 @@ class TestGrocycode(unittest.TestCase):
     def test_code_returns_product(self):
         CODE = "grcy:p:1:x624f2505ded59"
         grocycode = GrocyCode(CODE)
-        product = grocycode.get_item()
+        product = grocycode.get_product()
         self.assertIsInstance(product, Product)
         self.assertEqual(product.id, 1)
         self.assertEqual(product.stock_id, "x624f2505ded59")
@@ -48,6 +50,16 @@ class TestGrocycode(unittest.TestCase):
             GrocyCode(CODE)
 
         self.assertEqual(str(error.exception), "Unknown code type: 'x'")
+
+    def test_not_a_product_raises_exception(self):
+        CODE = "grcy:p:1"
+        grocy_code = GrocyCode(CODE)
+
+        with patch.object(grocy_code, "type", None):
+            with self.assertRaises(NotAProductException) as error:
+                grocy_code.get_product()
+
+        self.assertIn(f"Not a product code: '{CODE}'", str(error.exception))
 
 
 if __name__ == "__main__":

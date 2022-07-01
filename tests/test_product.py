@@ -32,7 +32,7 @@ class TestProduct(unittest.TestCase):
         mock_post.return_value = MagicMock(status_code=200)
         CODE = "grcy:p:1:x624f2505ded59"
         grocycode = GrocyCode(CODE)
-        product = grocycode.get_item()
+        product = grocycode.get_product()
         product.open()
         # Check that get was called with correct parameters
         mock_post.assert_called()
@@ -55,7 +55,7 @@ class TestProduct(unittest.TestCase):
         mock_post.return_value = MagicMock(status_code=200)
         CODE = "grcy:p:1:x624f2505ded59"
         grocycode = GrocyCode(CODE)
-        product = grocycode.get_item()
+        product = grocycode.get_product()
         product.consume()
         # Check that get was called with correct parameters
         mock_post.assert_called()

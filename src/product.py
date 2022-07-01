@@ -12,8 +12,8 @@ class ProductNotExistsException(Exception):
 
 class Product(BaseModel):
     id: int
-    stock_id: str = None
-    grocycode: str = None
+    stock_id: str | None = None
+    grocycode: str | None = None
 
     def open(self, amount: int = 1):
         api_client = ApiClient()

@@ -81,7 +81,7 @@ def main():
         ntfy_handler = NtfyHandler()
         ntfy_formatter = logging.Formatter("%(levelname)s - %(message)s")
         ntfy_handler.setFormatter(ntfy_formatter)
-        file_handler.setLevel(logging.WARNING)
+        ntfy_handler.setLevel(logging.WARNING)
         logger.addHandler(ntfy_handler)
 
     # Get the barcode scanner device

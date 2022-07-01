@@ -58,7 +58,7 @@ def main():
     """
     # Get timezone
     tz = timezone(os.getenv("TZ", default="UTC"))
-     # Configure the logger
+    # Configure the logger
     logger = logging.getLogger(__name__)
     formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)-8s %(message)s")
     stream_handler = logging.StreamHandler(sys.stdout)
